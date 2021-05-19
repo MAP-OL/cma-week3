@@ -46,14 +46,44 @@ Caro <- Caro %>%                                    #specifying a threshold dist
 Caro_filter <- Caro %>%                             #Removing static points
   filter(!static)
 
-#Task 3                                      #The trajectory of Caro, filtered to the positions where the animal was not static
+# Task 3    #The trajectory of Caro, filtered to the positions where the animal was not static
+
 ggplot(data=Caro,aes(E, N))  +
   geom_path() +
   geom_point(aes(color=static)) +
   coord_equal() +
   theme(legend.position = "bottom") +
   theme_classic()
+ 
+# Task 4 Segment-based analysis
 
+rle_id <- function(vec){
+  x <- rle(vec)$lengths
+  as.factor(rep(seq_along(x), times=x))
+}
 
+Caro <- Caro %>%
+  mutate(segment_id = rle_id(static))               #assigning unique IDs to subtrajectories
 
+ggplot(Caro,aes(E, N))  +                           #creating ggplot with uncleaned moving segments
+  geom_path(aes(colour=segment_id)) +
+  geom_point(aes(color=segment_id)) +
+  coord_equal() +
+  theme(legend.position="none")+
+  labs(color="Segments", titel="Moving segments (uncleaned)")
+
+# remove short segments with duration < 5 Minutes
+
+Caro_5<- Caro%>%
+  group_by(segment_id)%>%
+  mutate(n=n())%>%
+  filter(n>=5)
+
+ggplot(Caro_5,aes(E, N))  +                           #creating ggplot with uncleaned moving segments
+  geom_path(aes(colour=segment_id)) +
+  geom_point(aes(color=segment_id)) +
+  coord_equal() +
+  theme(legend.position = "none")
+  labs(color="Segments", titel="Moving segments (removed segments <5)") #Not sure why my filter does not work? GGplot looks uncleaned and cleaned nearly the same? What did I do wrong?
+  
 
