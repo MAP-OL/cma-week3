@@ -86,4 +86,24 @@ ggplot(Caro_5,aes(E, N))  +                           #creating ggplot with uncl
   theme(legend.position = "none")
   labs(color="Segments", titel="Moving segments (removed segments <5)") #Not sure why my filter does not work? GGplot looks uncleaned and cleaned nearly the same? What did I do wrong?
   
+# Task 5 Similarity measures
+  
+Pedestrian<-read_delim("pedestrian.csv",",")
+str(Pedestrian)
+
+Pedestrian<- Pedestrian%>%
+  mutate(
+    trajID_fac=as.factor(TrajID),
+DateTime_integ=as.integer(DatetimeUTC))
+str(Pedestrian)
+  
+ggplot(Pedestrian,aes(E, N, colour=TrajID))  +                           #creating ggplot for the 6 trajectories
+  geom_path() +
+  geom_point() +
+  coord_equal() +
+  facet_wrap(~TrajID)+
+  theme_classic()+
+  theme(legend.position = "none")+
+labs(titel="Visual Comparision of the 6 trajectories")
+
 
