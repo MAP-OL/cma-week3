@@ -12,11 +12,48 @@ Caro<-read_delim("caro60.csv",",")
 
 #Task 1 Segmentation 
 Caro <- Caro %>%
-  mutate(
+  mutate(                                            #Measure distance within this temporal window
     nMinus3 = sqrt((lag(E,3)-E)^2+(lag(N,3)-N)^2),   # distance to pos -3 minutes
     nMinus2 = sqrt((lag(E,2)-E)^2+(lag(N,2)-N)^2),   # distance to pos -2 minutes
-    nMinus1 = sqrt((lag(E,3)-E)^2+(lag(N,1)-N)^2),   # distance to pos -1 minute
+    nMinus1 = sqrt((lag(E,1)-E)^2+(lag(N,1)-N)^2),   # distance to pos -1 minute
     nPlus1  = sqrt((E-lead(E,1))^2+(N-lead(N,1))^2), # distance to pos +1 mintues
     nPlus2  = sqrt((E-lead(E,2))^2+(N-lead(N,2))^2), # distance to pos +2 minutes
-    nPlus3 =sqrt((E-lead(E,3)^2)+(N-lead(N,3))^2)    # distance to pos +3 minutes
-  )
+    nPlus3 =  sqrt((E-lead(E,3))^2)+(N-lead(N,3))^2)# distance to pos +3 minutes
+
+Caro <- Caro %>%                                     #Calculating Mean
+  rowwise() %>%
+  mutate(
+    stepMean = mean(c(nMinus3,nMinus2, nMinus1,nPlus1,nPlus2,nPlus3))
+  ) %>%
+  ungroup()
+
+Caro
+
+#Task 2 Specify and apply threshold d
+
+ggplot(Caro,aes(x= stepMean)) +                     
+  geom_histogram(binwidth = 5)
+
+ggplot(Caro, aes(y=stepMean)) +                     
+  geom_boxplot(binwidth=5)
+
+summary(Caro)
+
+Caro <- Caro %>%                                    #specifying a threshold distance on stepMean
+  ungroup() %>%
+  mutate(static = stepMean < mean(stepMean, na.rm = TRUE))
+
+Caro_filter <- Caro %>%                             #Removing static points
+  filter(!static)
+
+#Task 3                                      #The trajectory of Caro, filtered to the positions where the animal was not static
+ggplot(data=Caro,aes(E, N))  +
+  geom_path() +
+  geom_point(aes(color=static)) +
+  coord_equal() +
+  theme(legend.position = "bottom") +
+  theme_classic()
+
+
+
+
